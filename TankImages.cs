@@ -27,39 +27,17 @@ namespace TankWar
             Resources.GreenLeft, Resources.GreenRight};
         public static Bitmap[] BulletImages = {Resources.BulletUp, Resources.BulletDown,
             Resources.BulletLeft, Resources.BulletRight};
+        public static Bitmap[] ExpImages = {Resources.EXP1,Resources.EXP2,Resources.EXP3,
+            Resources.EXP4, Resources.EXP5};
         static TankImages()
         {
-            foreach (var item in MyTankImages)
-            {
-                item.MakeTransparent();                    
-            }
-            foreach (var item in TigerTankImages)
-            {
-                item.MakeTransparent();                    
-            }
-            foreach (var item in PantherTankImages)
-            {
-                item.MakeTransparent();                    
-            }
-            foreach (var item in StuGTankImages)
-            {
-                item.MakeTransparent();                    
-            }
-            foreach (var item in MyTankImages)
-            {
-                item.MakeTransparent();                    
-            }
-            foreach (var item in GrayTankImages)
-            {
-                item.MakeTransparent();                    
-            }
-            foreach (var item in GreenTankImages)
-            {
-                item.MakeTransparent();                    
-            }
             foreach (var item in BulletImages)
             {
                 item.MakeTransparent();                    
+            }
+            foreach(var item in ExpImages)
+            {
+                item.MakeTransparent();
             }
 
         }

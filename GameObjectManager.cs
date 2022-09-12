@@ -13,9 +13,9 @@ namespace TankWar
     {
         // 单例模式，该类不可实例化
         private GameObjectManager() { }
-        private static List<StaticObject> brickWalls = new List<StaticObject>();
-        private static List<StaticObject> steelWalls = new List<StaticObject>();
-        private static StaticObject boss;
+        private static List<BrickWall> brickWalls = new List<BrickWall>();
+        private static List<SteelWall> steelWalls = new List<SteelWall>();
+        private static Boss boss;
         private static MyTank myTank;
         private static List<BadTank> badCompany = new List<BadTank>();
         private static int framworkCount = 1;
@@ -25,6 +25,8 @@ namespace TankWar
         private static List<GameObject> notPassObjects = new List<GameObject>();
         // 用于存储 子弹对象 
         private static List<Bullet> bullets = new List<Bullet>();
+        // 用于存储 爆炸对象
+        private static List<Explosion> explosions = new List<Explosion>();
         // 使用同一个随机数对象，保证使用 同一个随机数种子
         private static Random rd = new Random();
         /// <summary>
@@ -74,7 +76,7 @@ namespace TankWar
         }
         private static void CreateBoss()
         {
-            boss = new StaticObject(210, 420, Resources.Boss);
+            boss = new Boss(210, 420, Resources.Boss);
         }
         private static void CreateMyTank()
         {
@@ -130,15 +132,43 @@ namespace TankWar
             BadTank badTank = new BadTank(x, y, direction, images, speed, true);
             ClassifyABadTank(badTank);
         }
-        public static void CreateABullet(int x, int y,Source source, Direction direction)
+        public static void CreateABullet(int x, int y,Source source, Direction direction,int speed)
         {
-            Bullet bullet = new Bullet(x, y,source, direction, TankImages.BulletImages, 4);
+            Bullet bullet = new Bullet(x, y,source, direction, TankImages.BulletImages, speed);
             ClassifyABullet(bullet);
         }
-         private static void ClassifyABullet(Bullet bullet)
+        //public static void DestroyGameOject()
+        //{
+        //    DestroyBullet();
+        //}
+        /// <summary>
+        /// 销毁子弹，并从分类集合中删除对其的引用
+        /// </summary>
+        //public static void DestroyBullet()
+        //{
+        //    for (int i = bullets.Count; i >= 0; i--)
+        //    {
+        //        if (bullets[i].IsDestory)
+        //        {
+        //            bullets.Remove(bullets[i]);
+        //            gameObjects.Remove(bullets[i]);
+        //        }
+        //    }
+        //}
+        private static void ClassifyABullet(Bullet bullet)
         {
             bullets.Add(bullet);
             gameObjects.Add(bullet);
+        }
+        public static void CreateExplosion(int x, int y, Image[] images)
+        {
+           Explosion explosion = new Explosion(x, y, images);
+            ClassifyExplosion(explosion);
+        }
+        private static void ClassifyExplosion(Explosion explosion)
+        {
+            explosions.Add(explosion);
+            gameObjects.Add(explosion);
         }
 
         /// <summary>
@@ -180,11 +210,11 @@ namespace TankWar
                     wallType = (WallType)MapTypes.map1[i, j];
                     if (wallType == WallType.Brick)
                     {
-                        brickWalls.Add(new StaticObject(j * 15, i * 15, Resources.wall));
+                        brickWalls.Add(new BrickWall(j * 15, i * 15, Resources.wall));
                     }
                     else if (wallType == WallType.Stell)
                     {
-                        steelWalls.Add(new StaticObject(j * 15, i * 15, Resources.steel));
+                        steelWalls.Add(new SteelWall(j * 15, i * 15, Resources.steel));
                     }
                 }
             }
@@ -197,9 +227,36 @@ namespace TankWar
         public static void Update(Graphics imageCacheGraphics)
         {
             BornBadTank();
-            for(int i = 0; i < gameObjects.Count; i++)
+            // 集合删除从后向前遍历
+            for(int i = gameObjects.Count - 1; i >= 0 ; i--)
             {
-                gameObjects[i].Update(imageCacheGraphics);
+                // 清楚不需要的游戏对象
+                if (gameObjects[i].IsDestory)
+                {
+                    //先从 小集合删除 ，再从大集合里删除 从而保证一直可以从大集合里访问对象
+                    if (gameObjects[i] is Bullet)
+                    {
+                        bullets.Remove((Bullet)gameObjects[i]);
+
+                    }else if (gameObjects[i] is BrickWall)
+                    {
+                        brickWalls.Remove((BrickWall)gameObjects[i]);
+                        notPassObjects.Remove(gameObjects[i]);
+                    }
+                    else if (gameObjects[i] is BadTank)
+                    {
+                        badCompany.Remove((BadTank)gameObjects[i]);
+                        notPassObjects.Remove(gameObjects[i]);
+                    }else if (gameObjects[i] is Explosion)
+                    {
+                        explosions.Remove((Explosion)gameObjects[i]);
+                    }
+                    gameObjects.Remove(gameObjects[i]);
+                }
+                else
+                {
+                    gameObjects[i].Update(imageCacheGraphics);
+                }
             }
             //foreach 的底层使用的是迭代器， 当游戏线程在使用
             //迭代器的next()方法 访问下一个元素时，按键线程增加新子弹对象到其中，抛出异常。
@@ -270,6 +327,64 @@ namespace TankWar
             }
             return null;
         }
+        /// <summary>
+        /// 一颗子弹可以碰撞到多个个物体 
+        /// </summary>
+        /// <param name="rectangle"></param>
+        public static void BulletCollision(Bullet bullet)
+        {
+            Rectangle rectangle = bullet.GetRectangle();
+            int x = bullet.X + bullet.Width / 2;
+            int y = bullet.Y + bullet.Height / 2;
+            foreach (GameObject obj in steelWalls)
+            {
+                if (obj.GetRectangle().IntersectsWith(rectangle))
+                {
+                    bullet.IsDestory = true;
+                    CreateExplosion(x,y,TankImages.ExpImages);
+                }
+            }
+            foreach (GameObject obj in brickWalls)
+            {
+                if (obj.GetRectangle().IntersectsWith(rectangle))
+                {
+                    obj.IsDestory = true;
+                    bullet.IsDestory = true;
+                    CreateExplosion(x,y, TankImages.ExpImages);
+                }
+            }
+            //if (boss.GetRectangle().IntersectsWith(rectangle))
+            //{
+
+            //}
+            if (bullet.TankSource == Source.MyTank)
+            {
+                foreach (GameObject obj in badCompany)
+                {
+                    if (obj.GetRectangle().IntersectsWith(rectangle))
+                    {
+                        obj.IsDestory = true;
+                        bullet.IsDestory = true;
+                    CreateExplosion(x,y, TankImages.ExpImages);
+                    }
+                }
+            }else if(bullet.TankSource == Source.BadTank)
+            {
+                if (myTank.GetRectangle().IntersectsWith(rectangle))
+                {
+                    bullet.IsDestory = true;
+                    CreateExplosion(x,y, TankImages.ExpImages);
+                    myTank.Reset();
+                }
+            }
+            if (boss.GetRectangle().IntersectsWith(rectangle))
+            {
+                bullet.IsDestory = true;
+                CreateExplosion(x, y, TankImages.ExpImages);
+                GameFramework.ChargeGameState(GameState.Over);
+            }
+        }
+
     }
 }
 

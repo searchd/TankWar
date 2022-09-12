@@ -10,6 +10,9 @@ namespace TankWar
     internal class BadTank : MovableObject
     {
         private static Random random = new Random();
+
+        private int attackCount = 0;
+        private int attackSpeed = 60;
         public BadTank()
         {
         }
@@ -76,5 +79,53 @@ namespace TankWar
             } while (dir ==  Direction);
             Direction = dir;
         }
+        public override void Update(Graphics graphics)
+        {
+            CheckAttack();
+            base.Update(graphics);
+        }
+        /// <summary>
+        /// 检测是否需要攻击
+        /// </summary>
+        private void CheckAttack()
+        {
+            attackCount++;
+            if (attackCount == attackSpeed)
+            {
+                attackCount = 0;
+                Attack();
+            }
+        }
+
+        /// <summary>
+        /// 产生一个子弹
+        /// </summary>
+        private void Attack()
+        {
+            int x, y;
+            //将子弹中心定在，坦克的左上角
+            x = this.X - 11;
+            y = this.Y - 11;
+            if (Direction == Direction.Up)
+            {
+                x += Width / 2;  
+            }
+            else if (Direction == Direction.Down)
+            {
+                x += Width / 2;  
+                y += Height; 
+            }
+            else if (Direction == Direction.Left)
+            {
+                y += Height / 2;
+            }
+            else if (Direction == Direction.Right)
+            {
+                x += Width;
+                y += Height / 2;
+            }
+            GameObjectManager.CreateABullet(this.X, this.Y, Source.BadTank, Direction, Speed + 2);
+        }
+
     }
 }

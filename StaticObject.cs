@@ -16,5 +16,9 @@ namespace TankWar
             this.Y = y;
             this.SelfImage = img;
         }
+        public StaticObject()
+        {
+
+        }
     }
 }

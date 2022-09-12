@@ -11,15 +11,16 @@ namespace TankWar
 {
     internal class MyTank:MovableObject
     {
-        public MyTank()
+        private int startX;
+        private int startY;
+              public MyTank()
         {
 
         }
         public MyTank(int x, int y,Direction direction, Bitmap[] images, int speed, bool isMoving):base(x, y, direction, images, speed, isMoving)
         {
-            IsPress = false;
+            startX = x; startY = y;            IsPress = false;
         }
-
         public override void MoveCheck()
         {
             // 如果已经将超出边界，不再进行碰撞检测 
@@ -75,7 +76,7 @@ namespace TankWar
                     IsPress = true;
                     break;
                 case Keys.Space:
-                    GameObjectManager.CreateABullet(X, Y, Source.MyTank, Direction);
+                    Attack();
                     break;
             }
         }
@@ -86,6 +87,44 @@ namespace TankWar
             {
                 IsPress = false; 
             } 
+        }
+        /// <summary>
+        /// 产生一个子弹
+        /// </summary>
+        private void Attack()
+        {
+            int x, y;
+            //将子弹中心定在，坦克的左上角
+            x = this.X - 11;
+            y = this.Y - 11;
+            if (Direction == Direction.Up)
+            {
+                x += Width / 2;  
+            }
+            else if (Direction == Direction.Down)
+            {
+                x += Width / 2;  
+                y += Height; 
+            }
+            else if (Direction == Direction.Left)
+            {
+                y += Height / 2;
+            }
+            else if (Direction == Direction.Right)
+            {
+                x += Width;
+                y += Height / 2;
+            }
+            GameObjectManager.CreateABullet(this.X, this.Y, Source.MyTank, Direction,Speed + 2);
+        }
+        /// <summary>
+        /// 坦克恢复到初始状态
+        /// </summary>
+        public void Reset()
+        {
+            X = startX;
+            Y = startY;
+            Direction = Direction.Up;    
         }
     }
 }

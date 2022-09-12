@@ -15,6 +15,18 @@ namespace TankWar
         public int Height { get; set; }
         public int Width { get; set; }
         private Image selfImage;
+        private bool isDestory;
+        public bool IsDestory {
+            get
+            {
+                return isDestory;
+            }
+            set
+            {
+                isDestory = value;
+            }
+        }
+            
         /// <summary>
         /// 设置图片属性时，同时赋予对象高度
         /// </summary>
