@@ -20,4 +20,5 @@
 
  ### todolist
  1、按键监听线程与游戏线程存在资源冲突。（游戏运行中会抛出异常：System.InvalidOperationException）
+ 2、如何不使用函数实现属性 getter setter的重载。
  
