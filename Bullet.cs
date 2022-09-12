@@ -19,22 +19,31 @@ namespace TankWar
 
         public Bullet(int x, int y,Source tanksource, Direction direction, Bitmap[] bulletImages, int speed)
         {
+            this.X = x;
+            this.Y = y;
             TankSource = tanksource;
             Speed = speed;
             images = bulletImages;
-            Direction = direction;
-            X = x - Width / 2;
-            Y = y - Height / 2;
-        }
 
+            Direction = direction;
+
+            IsPress = true;
+        }
         public override void CheckCollied()
         {
-            throw new NotImplementedException();
+            GameObjectManager.BulletCollision(this);    
         }
 
         public override void MoveCheck()
         {
-            throw new NotImplementedException();
+            CheckBorder();
+            //碰撞边界时，改变isDestroy = ture
+            if (!IsMoving)
+            {
+                IsDestory = true;
+                return;
+            }
+            CheckCollied();
         }
     }
 }
