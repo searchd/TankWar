@@ -16,7 +16,7 @@
  7、MapTypes 用于存储不同地图数组数据。
  
  ###  类结构图
- <img width="420" alt="企业微信截图_16629128307183" src="https://user-images.githubusercontent.com/50863104/189537913-6bfe30de-725e-4ad0-9226-95a26892514c.png">
+ ![image](https://user-images.githubusercontent.com/50863104/189604614-40cc32fe-24f7-4f5c-bd72-cde12ba1c9e2.png)
 
  ### todolist
  1、按键监听线程与游戏线程存在资源冲突。（游戏运行中会抛出异常：System.InvalidOperationException）
